@@ -1,55 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    {% load static %}
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exam Result</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Optional: Add some custom spacing */
+      .result-message {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .question-card {
+        margin-bottom: 15px;
+      }
+      .choice-feedback {
+        margin-top: 5px;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h2 class="mb-4">Exam Results for {{ course.name }}</h2>
 
- <nav class="navbar navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="navbar-header">
-              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+      <!-- Pass/Fail Message -->
+      <div class="result-message">
+        {% if grade >= 80 %}
+        <!-- Assuming 80 is the passing score -->
+        <div class="alert alert-success" role="alert">
+          <b>Congratulations, {{ user.first_name }}!</b> You have passed the
+          exam and completed the course with score {{ grade }}/100
         </div>
-        <ul class="nav navbar-nav navbar-right">
-            {% if user.is_authenticated %}
-            <li>
-                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
-            </li>
-            {% else %}
-            <li>
-                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                    {% csrf_token %}
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Username" name="username" >
-                        <input type="password" class="form-control" placeholder="Username" name="psw" >
-                        <button class="btn btn-primary" type="submit">Login</button>
-                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
-                    </div>
-                </form>
-            </li>
-            {% endif %}
-        </ul>
-    </div>
-</nav>
-
-<div class="container-fluid">
-    {% if grade > 80 %}
-    <div class="alert alert-success">
-       <!--HINT Display passed info -->
-    </div>
         {% else %}
-        <div class="alert alert-danger">
-            <!--HINT Display failed info -->
+        <div class="alert alert-danger" role="alert">
+          <b>Failed</b> Sorry, {{ user.first_name }}! You have failed the exam
+          with score {{ grade }}/100
+          <p class="mt-2">
+            Please review the results below and consider retaking the exam.
+          </p>
         </div>
-        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
         {% endif %}
-        <div class="card-columns-vertical mt-1">
-        <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
+      </div>
+
+      <h4 class="mt-4 mb-3">Detailed Results:</h4>
+
+      <!-- Loop through all questions in the course -->
+      {% for question in course.question_set.all %}
+      <div class="card question-card">
+        <div class="card-header">
+          <h5>{{ question.content }}</h5>
+          <span class="badge bg-secondary">Points: {{ question.grade }}</span>
         </div>
+        <div class="card-body">
+          <!-- Loop through all choices for the current question -->
+          {% for choice in question.choice_set.all %}
+          <div class="choice-feedback">
+            {% if choice.is_correct and choice in selected_choices %}
+            <!-- Correct choice that was selected by the user -->
+            <div class="text-success">
+              <span class="fw-bold">Correct answer (selected):</span> {{
+              choice.content }}
+            </div>
+            {% elif choice.is_correct and choice not in selected_choices %}
+            <!-- Correct choice that the user did NOT select -->
+            <div class="text-warning">
+              <span class="fw-bold">Missed correct answer:</span> {{
+              choice.content }}
+            </div>
+            {% elif not choice.is_correct and choice in selected_choices %}
+            <!-- Incorrect choice that the user DID select -->
+            <div class="text-danger">
+              <span class="fw-bold">Wrong answer (selected):</span> {{
+              choice.content }}
+            </div>
+            {% else %}
+            <!-- Incorrect choice that the user did not select -->
+            <div>{{ choice.content }}</div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p>No choices available for this question.</p>
+          {% endfor %}
+        </div>
+        <!-- End card-body -->
+      </div>
+      <!-- End card -->
+      {% empty %}
+      <p>No questions found for this course.</p>
+      {% endfor %}
+
+      <!-- Action Buttons -->
+      <div class="mt-4">
+        <a
+          class="btn btn-primary"
+          href="{% url 'onlinecourse:course_details' course.pk %}"
+          >Back to Course</a
+        >
+        <!-- Optional: Add a button/link to retake the exam if needed -->
+        <!-- <a class="btn btn-secondary" href="{% url 'onlinecourse:course_details' course.pk %}#exam">Retake Exam</a> -->
+      </div>
     </div>
-</body>
+    <!-- End container -->
+
+    <!-- Bootstrap JS (optional, for interactive components if needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

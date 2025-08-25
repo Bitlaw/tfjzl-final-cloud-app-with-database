@@ -1,65 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     {% load static %}
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <meta charset="UTF-8">
+    <!-- Link to Bootstrap CSS for styling -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <meta charset="UTF-8" />
     <title>Online Courses</title>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation bar -->
     <nav class="navbar navbar-light bg-light">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                  <a class="navbar-brand" href="#">Online Course</a>
-            </div>
-            <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                <li>
-                    <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                    <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
-                </li>
-                {% else %}
-                <li>
-                    <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Username" name="username" >
-                            <input type="password" class="form-control" placeholder="Username" name="psw" >
-                            <button class="btn btn-primary" type="submit">Login</button>
-                            <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
-                        </div>
-                    </form>
-                </li>
-                {% endif %}
-            </ul>
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <!-- Link to the main index page -->
+          <a class="navbar-brand" href="{% url 'onlinecourse:index' %}"
+            >Online Course</a
+          >
         </div>
+        <ul class="nav navbar-nav navbar-right">
+          <!-- Conditional display based on user authentication status -->
+          {% if user.is_authenticated %}
+          <li>
+            <!-- Display logged-in user's name and logout link -->
+            <a class="btn btn-link" href="#"
+              >{{ user.first_name }}({{ user.username }})</a
+            >
+            <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}"
+              >Logout</a
+            >
+          </li>
+          {% else %}
+          <li>
+            <!-- Display login/registration form if user is not authenticated -->
+            <form
+              class="form-inline"
+              action="{% url 'onlinecourse:login' %}"
+              method="post"
+            >
+              {% csrf_token %}
+              <div class="input-group">
+                <!-- Username input field -->
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Username"
+                  name="username"
+                />
+                <!-- Password input field -->
+                <input
+                  type="password"
+                  class="form-control"
+                  placeholder="Password"
+                  name="psw"
+                />
+                <!-- Corrected placeholder -->
+                <!-- Login button -->
+                <button class="btn btn-primary" type="submit">Login</button>
+                <!-- Link to the registration page -->
+                <a
+                  class="btn btn-link"
+                  href="{% url 'onlinecourse:registration' %}"
+                  >Sign Up</a
+                >
+              </div>
+            </form>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </nav>
 
     <!-- Page content -->
-    {% if course_list %}
-        <div class="container">
-            <div class="card-deck">
-                {% for course in course_list %}
-                         <div class="card" style="width: 36rem;">
-                          <img class="card-img-left" src="{{MEDIA_URL}}/{{ course.image }}" width="240px" height="240px"
-                               alt="Course image">
-                          <div class="card-body bg-light">
-                              <h5 class="card-title">{{ course.name }}, <span class="text-success">
-                                  {{ course.total_enrollment}} enrolled</span></h5>
-                            <p class="card-text">{{ course.description}}</p>
-                            <form action="{% url 'onlinecourse:enroll' course.id %}" method="post">
-                                  {% csrf_token %}
-                                  <input class="btn btn-primary"  type="submit"
-                                         value="{% if course.is_enrolled %}Enter{% else %}Enroll{% endif %} ">
-                            </form>
-                          </div>
-                        </div>
-                {% endfor %}
-            </div>
+    <div class="container">
+      <!-- Check if there are any courses in the course_list context variable -->
+      {% if course_list %}
+      <!-- Display courses in a Bootstrap card deck layout -->
+      <div class="card-deck">
+        <!-- Loop through each course in the course_list -->
+        {% for course in course_list %}
+        <!-- Card for each individual course -->
+        <div class="card" style="width: 36rem">
+          <!-- Display the course image -->
+          <img
+            class="card-img-left"
+            src="{{MEDIA_URL}}/{{ course.image }}"
+            width="240px"
+            height="240px"
+            alt="Course image"
+          />
+          <div class="card-body bg-light">
+            <!-- Display course name and total enrollment -->
+            <h5 class="card-title">
+              {{ course.name }},
+              <span class="text-success">
+                {{ course.total_enrollment}} enrolled</span
+              >
+            </h5>
+            <!-- Display course description -->
+            <p class="card-text">{{ course.description}}</p>
+            <!-- Form for enrolling in the course -->
+            <form
+              action="{% url 'onlinecourse:enroll' course.id %}"
+              method="post"
+            >
+              {% csrf_token %}
+              <!-- Submit button: shows 'Enter' if enrolled, 'Enroll' otherwise -->
+              <input
+                class="btn btn-primary"
+                type="submit"
+                value="{% if course.is_enrolled %}Enter{% else %}Enroll{% endif %} "
+              />
+            </form>
+          </div>
         </div>
-    {% else %}
-        <p>No courses are available.</p>
-    {% endif %}
-</body>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- Display a message if no courses are available -->
+      <p>No courses are available.</p>
+      {% endif %}
+    </div>
+  </body>
 </html>

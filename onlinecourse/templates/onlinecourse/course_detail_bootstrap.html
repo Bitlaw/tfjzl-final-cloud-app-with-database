@@ -1,56 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-     {% load static %}
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <head>
+    {% load static %}
+    <!-- Include Bootstrap CSS for styling -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Include jQuery, Popper.js, and Bootstrap JS for interactive components -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <meta charset="UTF-8">
-</head>
+    <meta charset="UTF-8" />
+    <!-- Set the page title dynamically based on the course name -->
+    <title>{{ course.name }} - Course Details</title>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation bar -->
     <nav class="navbar navbar-light bg-light">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                  <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
-            </div>
-            <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                <li>
-                    <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                    <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
-                </li>
-                {% else %}
-                <li>
-                    <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Username" name="username" >
-                            <input type="password" class="form-control" placeholder="Username" name="psw" >
-                            <button class="btn btn-primary" type="submit">Login</button>
-                            <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
-                        </div>
-                    </form>
-                </li>
-                {% endif %}
-            </ul>
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <!-- Link back to the main course list page -->
+          <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
         </div>
+        <ul class="nav navbar-nav navbar-right">
+          <!-- Conditional display based on user authentication status -->
+          {% if user.is_authenticated %}
+          <li>
+            <!-- Display logged-in user's name and logout link -->
+            <a class="btn btn-link" href="#"
+              >{{ user.first_name }}({{ user.username }})</a
+            >
+            <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}"
+              >Logout</a
+            >
+          </li>
+          {% else %}
+          <li>
+            <!-- Display login form if user is not authenticated -->
+            <form
+              class="form-inline"
+              action="{% url 'onlinecourse:login' %}"
+              method="post"
+            >
+              {% csrf_token %}
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Username"
+                  name="username"
+                />
+                <input
+                  type="password"
+                  class="form-control"
+                  placeholder="Password"
+                  name="psw"
+                />
+                <!-- Corrected placeholder -->
+                <button class="btn btn-primary" type="submit">Login</button>
+                <a
+                  class="btn btn-link"
+                  href="{% url 'onlinecourse:registration' %}"
+                  >Sign Up</a
+                >
+              </div>
+            </form>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </nav>
 
-    <!-- Page content -->
+    <!-- Main page content container -->
     <div class="container-fluid">
-            <h2>{{ course.name }}</h2>
-            <div class="card-columns-vertical">
-                {% for lesson in course.lesson_set.all %}
-                    <div class="card mt-1">
-                        <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
-                        <div class="card-body">{{lesson.content}}</div>
-                    </div>
-                {% endfor %}
+      <!-- Display the course name -->
+      <h2>{{ course.name }}</h2>
+      <!-- Display lessons in a vertical card layout -->
+      <div class="card-columns-vertical">
+        {% for lesson in course.lesson_set.all %}
+        <div class="card mt-1">
+          <!-- Display lesson order and title in the header -->
+          <div class="card-header">
+            <h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5>
+          </div>
+          <!-- Display lesson content in the body -->
+          <div class="card-body">{{lesson.content}}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Start of the Exam Section -->
+      <!-- This section is only visible to authenticated users -->
+      {% if user.is_authenticated %}
+      <!-- Add some vertical space before the exam button -->
+      <br />
+      <!-- Button to toggle the visibility of the exam form using Bootstrap's collapse feature -->
+      <button
+        class="btn btn-primary btn-block"
+        data-toggle="collapse"
+        data-target="#exam"
+      >
+        Start Exam
+      </button>
+
+      <!-- Collapsible container for the exam form -->
+      <div id="exam" class="collapse">
+        <!-- Form to submit exam answers -->
+        <!-- The action points to the 'submit' URL defined in onlinecourse/urls.py, passing the course ID -->
+        <form
+          id="questionform"
+          action="{% url 'onlinecourse:submit' course.id %}"
+          method="POST"
+        >
+          <!-- CSRF token is required for POST requests in Django for security -->
+          {% csrf_token %}
+
+          <!-- Loop through all questions related to the current course -->
+          {% for question in course.question_set.all %}
+          <!-- Container for a single question using a Bootstrap card -->
+          <div class="card mt-1">
+            <!-- Display the question text in the card header -->
+            <div class="card-header">
+              <h5>{{ question.content }}</h5>
             </div>
-            <!-- Course detail template changes go here -->
+            <!-- Container for the choices belonging to this question -->
+            <div class="form-group">
+              <!-- Loop through all choices related to the current question -->
+              {% for choice in question.choice_set.all %}
+              <!-- Display each choice as a checkbox using Bootstrap form classes -->
+              <div class="form-check">
+                <label class="form-check-label">
+                  <!-- Checkbox input:
+                                         - type="checkbox": Allows multiple selections per question
+                                         - name="choice_{{choice.id}}": Unique name for backend processing (grouped by question if needed)
+                                         - class="form-check-input": Applies Bootstrap styling
+                                         - id="{{choice.id}}": Unique ID for the input
+                                         - value="{{choice.id}}": The value sent if this checkbox is checked
+                                         - {{ choice.content }}: The text label displayed next to the checkbox
+                                    -->
+                  <input
+                    type="checkbox"
+                    name="choice_{{choice.id}}"
+                    class="form-check-input"
+                    id="choice_{{choice.id}}"
+                    <!--
+                    Made
+                    id
+                    more
+                    unique
+                    --
+                  />
+                  value="{{choice.id}}">{{ choice.content }}
+                </label>
+              </div>
+              {% empty %}
+              <!-- Display a message if no choices exist for a particular question -->
+              <p>No choices available for this question.</p>
+              {% endfor %}
+            </div>
+            <!-- End of form-group for choices -->
+          </div>
+          <!-- End of card for question -->
+          {% empty %}
+          <!-- Display a message if no questions exist for the course -->
+          <p>No questions available for this exam.</p>
+          {% endfor %}
+
+          <!-- Submit button for the entire exam form -->
+          <button class="btn btn-success mt-3" type="submit">
+            Submit Exam
+          </button>
+        </form>
+        <!-- End of exam form -->
+      </div>
+      <!-- End of collapsible exam container -->
+      {% endif %}
+      <!-- End of the Exam Section -->
     </div>
-</body>
+    <!-- End of main container -->
+  </body>
 </html>

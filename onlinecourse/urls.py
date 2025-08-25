@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 
-app_name = 'onlinecourse'
+app_name = 'onlinecourse' # This defines the namespace 'onlinecourse'
 urlpatterns = [
     # route is a string contains a URL pattern
     # view refers to the view function
@@ -14,11 +14,15 @@ urlpatterns = [
     path('logout/', views.logout_request, name='logout'),
     # ex: /onlinecourse/5/
     path('<int:pk>/', views.CourseDetailView.as_view(), name='course_details'),
-    # ex: /enroll/5/
+    # ex: /onlinecourse/5/enroll/
     path('<int:course_id>/enroll/', views.enroll, name='enroll'),
 
-    # <HINT> Create a route for submit view
+    # *** ADD THIS LINE FOR THE SUBMIT VIEW ***
+    # ex: /onlinecourse/5/submit/
+    path('<int:course_id>/submit/', views.submit, name="submit"),
 
-    # <HINT> Create a route for show_exam_result view
+    # *** ADD THIS LINE FOR THE EXAM RESULT VIEW (Task 5) ***
+    # ex: /onlinecourse/course/5/submission/10/result/
+    path('course/<int:course_id>/submission/<int:submission_id>/result/', views.show_exam_result, name="exam_result"),
 
- ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
